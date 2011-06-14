@@ -2,13 +2,10 @@
 module Categories.Product where
 
 open import Level
--- open import Function using (_-[_]-_)
 open import Data.Product using (_×_; Σ; _,_; proj₁; proj₂; zip; map; <_,_>)
 
 open import Categories.Category
 
--- private
---   _-***-_ : ∀ {a b c d} {A : Set a} {B : Set b} → (A → B → Set i) → (A → B → 
 private
   map⁎ : ∀ {a b p q} {A : Set a} {B : A → Set b} {P : A → Set p} {Q : {x : A} → P x → B x → Set q} → (f : (x : A) → B x) → (∀ {x} → (y : P x) → Q y (f x)) → (v : Σ A P) → Σ (B (proj₁ v)) (Q (proj₂ v))
   map⁎ f g (x , y) = (f x , g y)
@@ -23,11 +20,8 @@ private
 Product : ∀ {o ℓ e o′ ℓ′ e′} (C : Category o ℓ e) (D : Category o′ ℓ′ e′) → Category (o ⊔ o′) (ℓ ⊔ ℓ′) (e ⊔ e′)
 Product C D = record 
   { Obj = C.Obj × D.Obj
-  -- ; _⇒_ = λ x y → C [ fst x , fst y ] × D [ snd x , snd y ]
   ; _⇒_ = C._⇒_ -< _×_ >- D._⇒_
-  -- ; _≡_ = λ f g → C [ fst f ≡ fst g ] × D [ snd f ≡ snd g ]
   ; _≡_ = C._≡_ -< _×_ >- D._≡_
-  -- ; _∘_ = λ f g → C [ fst f ∘ fst g ] , D [ snd f ∘ snd g ]
   ; _∘_ = zip C._∘_ D._∘_
   ; id = C.id , D.id
   ; assoc = C.assoc , D.assoc
@@ -45,21 +39,6 @@ Product C D = record
   module D = Category D
 
 open import Categories.Functor using (Functor; module Functor)
-
-{-
-preassoc : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ o₃ ℓ₃ e₃} (C : Category o₁ ℓ₁ e₁) (D : Category o₂ ℓ₂ e₂) (E : Category o₃ ℓ₃ e₃) → Functor (Product (Product C D) E) (Product C (Product D E))
-preassoc C D E = record {
-    F₀ = λ x → fst (fst x) , snd (fst x) , snd x
-  ; F₁ = λ f → fst (fst f) , snd (fst f) , snd f
-  ; identity = IsEquivalence.refl C.equiv , IsEquivalence.refl D.equiv , IsEquivalence.refl E.equiv
-  ; homomorphism = IsEquivalence.refl C.equiv , IsEquivalence.refl D.equiv , IsEquivalence.refl E.equiv
-  ; F-resp-≡ = λ F≡G → fst (fst F≡G) , snd (fst F≡G) , snd F≡G
-  }
-  where
-  module C = Category C
-  module D = Category D
-  module E = Category E
--}
 
 infixr 2 _※_
 _※_ : ∀ {o ℓ e o′₁ ℓ′₁ e′₁ o′₂ ℓ′₂ e′₂} {C : Category o ℓ e} {D₁ : Category o′₁ ℓ′₁ e′₁} {D₂ : Category o′₂ ℓ′₂ e′₂} → (F : Functor C D₁) → (G : Functor C D₂) → Functor C (Product D₁ D₂)
